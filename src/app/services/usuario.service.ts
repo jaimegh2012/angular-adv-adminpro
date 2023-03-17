@@ -20,9 +20,16 @@ export class UsuarioService {
 
   logout(){
     localStorage.removeItem('token');
+    this.googleInit();
     google.accounts.id.revoke('jaimegutierrez572@gmail.com', () => {
     });
     this._router.navigateByUrl('/login');
+  }
+
+  googleInit(){
+    google.accounts.id.initialize({
+      client_id: "339760365092-eslp5gjnn6dnmnu6paqp4f7kkgotao3t.apps.googleusercontent.com"
+    });
   }
 
   validarToken(){
