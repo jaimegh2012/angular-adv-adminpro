@@ -142,4 +142,4 @@ const customInitFunctions = () => {
     });
 }
 
-this.customInitFunctions();
+customInitFunctions();

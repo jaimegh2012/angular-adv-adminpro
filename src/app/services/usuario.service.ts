@@ -20,9 +20,9 @@ export class UsuarioService {
 
   logout(){
     localStorage.removeItem('token');
-    google.accounts.id.revoke('descargasplay2012@gmail.com', () => {
-      this._router.navigateByUrl('/login');
+    google.accounts.id.revoke('jaimegutierrez572@gmail.com', () => {
     });
+    this._router.navigateByUrl('/login');
   }
 
   validarToken(){
