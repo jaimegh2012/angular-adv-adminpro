@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { LoginForm } from '../interfaces/login-form.interface';
 import { RegisterForm } from '../interfaces/register-form.interface';
 import { Usuario } from '../models/usuario.model';
+import { CargarUsuario } from '../interfaces/usuario.interface';
 declare const google: any;
 
 @Injectable({
@@ -27,6 +28,14 @@ export class UsuarioService {
     return this.usuario.uid;
   }
 
+  get headers(){
+    return {
+      headers: {
+        'x-token': this.token
+      }
+    }
+  }
+
   logout(){
     localStorage.removeItem('token');
     this.googleInit();
@@ -42,11 +51,7 @@ export class UsuarioService {
   }
 
   validarToken(){
-    return this._http.get(`${environment.base_url}/login/renew`, {
-      headers: {
-        'x-token': this.token
-      }
-    })
+    return this._http.get(`${environment.base_url}/login/renew`, this.headers)
     .pipe(
       tap((resp: any) => {
         const {nombre, email, rol, img, google, uid} = resp.usuario;
@@ -72,13 +77,9 @@ export class UsuarioService {
     data = {
       ...data,
       rol: this.usuario.rol || ''
-    }
+  }
 
-   return this._http.put(`${environment.base_url}/usuarios/${this.uid}`, data, {
-    headers: {
-      'x-token': this.token
-    }
-   })
+   return this._http.put(`${environment.base_url}/usuarios/${this.uid}`, data, this.headers)
   }
 
   loginUsuario(data: LoginForm){
@@ -97,5 +98,34 @@ export class UsuarioService {
         localStorage.setItem('token', resp.token);
       })
     );
+  }
+
+
+  cargarUsuarios(desde: number = 0){
+    return this._http.get<CargarUsuario>(`${environment.base_url}/usuarios?desde=${desde}`, this.headers)
+    .pipe(
+      map( resp => {
+        const usuarios = resp.usuarios.map(
+          user => new Usuario(user.nombre, user.email, '', user.rol, user.img, user.google, user.uid)
+        );
+
+        console.log('respuesta usuarios', resp.usuarios);
+        console.log('usuarios regenerados', usuarios);
+
+        return {
+          cantidadUsuarios: resp.cantidadUsuarios,
+          usuarios
+        }
+      })
+    );
+  }
+
+  eliminarUsuario(usuario: Usuario){
+    return this._http.delete(`${environment.base_url}/usuarios/${usuario.uid}`, this.headers);
+  }
+
+
+  guardarUsuario(usuario: Usuario){
+   return this._http.put(`${environment.base_url}/usuarios/${usuario.uid}`, usuario, this.headers);
   }
 }
