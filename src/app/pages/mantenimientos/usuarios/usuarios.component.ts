@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Usuario } from 'src/app/models/usuario.model';
 import { BusquedasService } from 'src/app/services/busquedas.service';
@@ -12,13 +13,15 @@ import Swal from 'sweetalert2';
   styles: [
   ]
 })
-export class UsuariosComponent implements OnInit {
+export class UsuariosComponent implements OnInit, OnDestroy {
 
   usuarios: Usuario[] = [];
   usuariosTemp: Usuario[] = [];
   cantidadUsuarios: number = 0;
   desde: number = 0;
   cargando: boolean = true; 
+  imagenSuscription!: Subscription;
+
   constructor(
     private _usuarioService: UsuarioService,
     private _busquedasService: BusquedasService,
@@ -28,13 +31,17 @@ export class UsuariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarUsuarios();
-    this._modalImagenService.nuevaImagen
+    this.imagenSuscription = this._modalImagenService.nuevaImagen
     .pipe(
       delay(100)
     )
     .subscribe(img => {
       this.cargarUsuarios();
     })
+  }
+
+  ngOnDestroy(): void {
+    this.imagenSuscription.unsubscribe();
   }
 
   cargarUsuarios(){
@@ -71,7 +78,7 @@ export class UsuariosComponent implements OnInit {
       return;
     }
     this.cargando = true;
-    this._busquedasService.buscar('usuarios', termino).subscribe(resp => {
+    this._busquedasService.buscar('usuarios', termino).subscribe((resp: any) => {
       this.usuarios = resp;
       this.cargando = false;
     })
